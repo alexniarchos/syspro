@@ -1,0 +1,2 @@
+#define MAXBUFF 4096
+#define QUERIES 100

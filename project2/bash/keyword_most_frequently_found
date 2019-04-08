@@ -1,0 +1,81 @@
+#!/bin/bash
+array=()#holds the unique keywords found in log files
+flagarr=()#make sure that each keyword is read once per file
+sumarr=()#how many log files have the keyword
+FILES=../log/*
+flag=0
+count=0
+for f in $FILES
+do
+    for ((i=0; i < ${#flagarr[@]} ; i++))
+    do
+        flagarr[$i]=0
+    done
+    echo "Processing $f file..."
+    # take action on each file. $f store current file name
+    while IFS=' ' read -ra line || [[ -n "$line" ]]; do
+        #echo "line read from file: ${line[@]}"
+        for ((i=0; i <= ${#line[@]} - 1; i++))
+        do
+            #echo "${line[$i]}"
+            if [ "${line[$i]}" = "search" ]; then
+                if [ $flag -eq 0 ]; then
+                    flag=1
+                    #echo "------adding ${line[$i+2]}"
+                    array+=(${line[$i+2]})
+                    flagarr+=(1)
+                    count=0
+                    for ((k=$((i+3)); k < ${#line[@]} ; k++))
+                    do
+                        if [ ${line[$k]} != ":" ]; then
+                            count=$((count+1))
+                        fi
+                    done
+                    sumarr+=($count)
+                else
+                    for ((j=0; j < ${#array[@]} ; j++))
+                    do 
+                        if [ ${line[$i+2]} = ${array[$j]} ]; then #keyword is found in array
+                            if [ ${flagarr[$j]} -eq 0 ]; then
+                                flagarr[$j]=1
+                                count=0
+                                for ((k=$((i+3)); k < ${#line[@]} ; k++))
+                                do
+                                    if [ ${line[$k]} != ":" ]; then
+                                        count=$((count+1))
+                                    fi
+                                done
+                                sumarr[$j]=$((${sumarr[$j]}+$count))
+                            fi
+                            break
+                        elif [ $(($j+1)) -ge ${#array[@]} ]; then #array out of bounds
+                            #echo "------adding ${line[$i+2]}"
+                            array+=(${line[$i+2]})
+                            flagarr+=(1)
+                            count=0
+                            for ((k=$((i+3)); k < ${#line[@]} ; k++))
+                            do
+                                if [ ${line[$k]} != ":" ]; then
+                                    count=$((count+1))
+                                fi
+                            done
+                            sumarr+=($count)
+                        fi
+                    done
+                fi
+            fi
+        done
+    done < "$f"
+done
+max=-1
+for ((i=0; i <= ${#sumarr[@]} - 1; i++))
+do
+    #echo "sumarr[$i] = ${sumarr[$i]}"
+    #echo "array[$i] = ${array[$i]}"
+    if [ ${sumarr[$i]} -gt $max ]; then
+        max=${sumarr[$i]}
+        pos=$i
+    fi
+done
+#echo "sum array length is ${#sumarr[@]} and max is $max"
+echo "Keyword most frequently found: ${array[$pos]} [totalNumFilesFound: ${sumarr[$pos]}]"

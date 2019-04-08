@@ -1,0 +1,14 @@
+Η εργασία περιέχει τους φακέλους myhttpd, mycrawler, root_directory.
+
+myhttpd: περιεχει τον web server
+    compile: make
+    run: ./myhttpd -p 8080 -c 9090 -t 4 -d ../root_directory/
+    
+mycrawler: περιεχει τον crawler και τον κώδικα της Άσκησης 2
+    compile: make clean, make
+    run: ./mycrawler -h localhost -p 8080 -c 9091 -t 4 -d save_dir /site0/page0_1234.html
+    
+rootdirectory: περιέχει τις ιστοσελίδες που δημιουργεί ο webcreator
+
+webcreator.sh: ειναι το bash script για τη λειτουργία του webcreator
+    run: ./webcreator.sh root_directory text_file 10 10
